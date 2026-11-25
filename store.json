@@ -1,0 +1,17 @@
+{
+  "cover": "com.ulanzi.freecad.ulanziPlugin/store-assets/cover-1x1.png",
+  "screenshots": [
+    "com.ulanzi.freecad.ulanziPlugin/assets/banners/banner-1.png"
+  ],
+  "longDescription": "Turn your Ulanzi D200X into a context-aware CAD console for FreeCAD (0.21, 1.0, and 1.1+) on macOS and Windows. Automatically syncs keys and icons per workbench (Part Design, Sketcher, Part, Core), supports smart multi-page navigation with live dot indicators, switches to Constraints on Sketcher geometry selection, and opens an automatic Numpad on numeric dialogs. Runs 100% locally via 127.0.0.1 with a 1-click Bridge installer.",
+  "deviceTypes": [
+    "deck"
+  ],
+  "tags": [
+    "freecad",
+    "cad",
+    "3d",
+    "productivity",
+    "engineering"
+  ]
+}

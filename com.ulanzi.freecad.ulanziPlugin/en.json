@@ -1,0 +1,28 @@
+{
+  "Name": "FreeCAD Plugin",
+  "Description": "Dynamic FreeCAD workbench bridge for Ulanzi D200X.",
+  "Detail": "FreeCAD Dynamic Bridge turns your Ulanzi D200X into a context-aware CAD console.\n\nKey Features:\n• Automatic Workbench Sync: Keys and icons dynamically adapt as you switch between Part Design, Sketcher, Part, and general views.\n• Smart Multi-Page Navigation: Instant pagination with live dot indicators across Part Design (2 pages) and Sketcher (Sketch, Constraints, Tools).\n• Context-Aware Intelligence: Automatically jumps to Constraints/Tools when selecting Sketcher geometry, and switches to an interactive Numpad whenever a numeric input dialog opens.\n• Zero-Friction Setup: Includes a ready-to-use D200X profile and a 1-click Bridge installer inside the Property Inspector.\n\nQuick Setup:\n1. Select any FreeCAD Dynamic Slot key in Ulanzi Studio.\n2. Click \"Install / Update FreeCAD Bridge\" and restart FreeCAD.\n3. Open FreeCAD — your D200X profile switches and syncs automatically.\n\nNotes:\n• Works locally via 127.0.0.1 (no cloud, no telemetry).\n• Supports macOS 10.15+ and Windows 10+ with FreeCAD 0.21 / 1.0+.",
+  "Actions": [
+    {
+      "Name": "FreeCAD Dynamic Slot",
+      "Tooltip": "Automatically switches icon and command based on the active FreeCAD workbench."
+    }
+  ],
+  "Localization": {
+    "InstallBridge": "Install / Update FreeCAD Bridge",
+    "InstallHint": "Copies InitGui.py and ulanzi_bridge.py to FreeCAD's Mod/UlanziBridge folder. Restart FreeCAD after installing.",
+    "KeyBehavior": "Key Behavior",
+    "Mode": "Mode",
+    "ModeAuto": "Automatic (by position + pagination)",
+    "ModeCustom": "Custom (choose per workbench)",
+    "AutoInfo": "This key automatically binds to the command matching its D200X slot in each workbench (with pagination in Part Design and Sketcher).",
+    "WorkbenchDefault": "Default / Other workbenches",
+    "SameAsDefault": "— Same as Default —",
+    "EmptyDisabled": "— Empty (disabled) —",
+    "StatusConnecting": "Connecting to plugin...",
+    "StatusConnected": "Connected",
+    "StatusInstalled": "Bridge installed — open or restart FreeCAD",
+    "StatusMissing": "Bridge not installed in FreeCAD",
+    "InstallingBridge": "Installing FreeCAD Bridge..."
+  }
+}

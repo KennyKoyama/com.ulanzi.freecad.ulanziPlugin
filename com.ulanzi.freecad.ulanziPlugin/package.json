@@ -1,0 +1,8 @@
+{
+  "name": "freecad-ulanzi-plugin",
+  "version": "1.0.1",
+  "type": "module",
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

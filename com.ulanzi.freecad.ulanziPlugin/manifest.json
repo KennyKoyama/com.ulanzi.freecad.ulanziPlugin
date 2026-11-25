@@ -1,0 +1,69 @@
+{
+  "UUID": "com.ulanzi.ulanzistudio.freecad",
+  "Name": "FreeCAD Plugin",
+  "Description": "Dynamic FreeCAD workbench bridge for Ulanzi D200X.",
+  "Detail": "FreeCAD Dynamic Bridge turns your Ulanzi D200X into a context-aware CAD console.\n\nKey Features:\n• Automatic Workbench Sync: Keys and icons dynamically adapt as you switch between Part Design, Sketcher, Part, and general views.\n• Smart Multi-Page Navigation: Instant pagination with live dot indicators across Part Design (2 pages) and Sketcher (Sketch, Constraints, Tools).\n• Context-Aware Intelligence: Automatically jumps to Constraints/Tools when selecting Sketcher geometry, and switches to an interactive Numpad whenever a numeric input dialog opens.\n• Zero-Friction Setup: Includes a ready-to-use D200X profile and a 1-click Bridge installer inside the Property Inspector.\n\nQuick Setup:\n1. Select any FreeCAD Dynamic Slot key in Ulanzi Studio.\n2. Click \"Install / Update FreeCAD Bridge\" and restart FreeCAD.\n3. Open FreeCAD — your D200X profile switches and syncs automatically.\n\nNotes:\n• Works locally via 127.0.0.1 (no cloud, no telemetry).\n• Supports macOS 10.15+ and Windows 10+ with FreeCAD 0.21 / 1.0+.",
+  "Author": "kennykoyama",
+  "Version": "1.0.1",
+  "Icon": "resources/icon.png",
+  "Category": "FreeCAD",
+  "CategoryIcon": "resources/icon.png",
+  "Banner": [
+    "assets/banners/banner-1.png"
+  ],
+  "CodePath": "plugin/app.js",
+  "Type": "JavaScript",
+  "Actions": [
+    {
+      "Name": "FreeCAD Dynamic Slot",
+      "Tooltip": "Automatically switches icon and command based on the active FreeCAD workbench.",
+      "Icon": "resources/icon.png",
+      "PropertyInspectorPath": "property-inspector/inspector.html",
+      "UUID": "com.ulanzi.ulanzistudio.freecad.slot",
+      "States": [
+        {
+          "Name": "Default",
+          "Image": "resources/icon.png"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "DisableAutomaticStates": true,
+      "Controllers": [
+        "Keypad"
+      ],
+      "Devices": []
+    }
+  ],
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.15"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Software": {
+    "MinVersion": "3.0.11"
+  },
+  "ApplicationsToMonitor": {
+    "windows": [
+      "FreeCAD.exe",
+      "freecad.exe"
+    ],
+    "mac": [
+      "org.freecad.FreeCAD",
+      "org.freecadweb.FreeCAD"
+    ]
+  },
+  "Profiles": [
+    {
+      "Name": "FreeCAD",
+      "DeviceType": 0,
+      "Readonly": false,
+      "DontAutoSwitchWhenInstalled": false,
+      "AutoInstall": true
+    }
+  ]
+}

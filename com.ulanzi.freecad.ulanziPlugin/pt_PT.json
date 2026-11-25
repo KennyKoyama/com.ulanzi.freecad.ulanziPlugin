@@ -1,0 +1,28 @@
+{
+  "Name": "FreeCAD Plugin",
+  "Description": "Ponte dinâmica de bancadas do FreeCAD para o Ulanzi D200X.",
+  "Detail": "O FreeCAD Dynamic Bridge transforma o seu Ulanzi D200X num console CAD sensível ao contexto.\n\nRecursos Principais:\n• Sincronização Automática de Bancadas: Teclas e ícones mudam dinamicamente ao alternar entre Part Design, Sketcher, Part e vistas gerais.\n• Paginação Inteligente: Navegação rápida com indicadores visuais dinâmicos no Part Design (2 páginas) e no Sketcher (Sketch, Constraints e Tools).\n• Inteligência de Contexto: Alterna automaticamente para Restrições/Ferramentas ao selecionar geometrias no Sketcher e exibe um Numpad interativo sempre que uma caixa de entrada numérica abre.\n• Configuração em 1 Clique: Inclui perfil pronto para D200X e instalador automático da Bridge no Property Inspector.\n\nComo Começar:\n1. Selecione qualquer tecla FreeCAD Dynamic Slot no Ulanzi Studio.\n2. Clique em \"Instalar / Atualizar Bridge no FreeCAD\" e reinicie o FreeCAD.\n3. Abra o FreeCAD — o perfil D200X alterna e sincroniza automaticamente.\n\nNotas:\n• Funciona 100% localmente via 127.0.0.1 (sem nuvem e sem telemetria).\n• Compatível com macOS 10.15+ e Windows 10+ no FreeCAD 0.21 / 1.0+.",
+  "Actions": [
+    {
+      "Name": "FreeCAD Dynamic Slot",
+      "Tooltip": "Troca ícone e comando automaticamente conforme a bancada ativa no FreeCAD."
+    }
+  ],
+  "Localization": {
+    "InstallBridge": "Instalar / Atualizar Bridge no FreeCAD",
+    "InstallHint": "Copia InitGui.py e ulanzi_bridge.py para a pasta Mod/UlanziBridge do FreeCAD. Após instalar, reinicie o FreeCAD.",
+    "KeyBehavior": "Comportamento da Tecla",
+    "Mode": "Modo",
+    "ModeAuto": "Automático (por posição + paginação)",
+    "ModeCustom": "Personalizado (escolher por bancada)",
+    "AutoInfo": "Esta tecla assume automaticamente o comando correspondente à sua posição no D200X em cada bancada (com paginação no Part Design e Sketcher).",
+    "WorkbenchDefault": "Padrão / Outras bancadas",
+    "SameAsDefault": "— Igual ao Padrão —",
+    "EmptyDisabled": "— Vazio (desativado) —",
+    "StatusConnecting": "Conectando ao plugin...",
+    "StatusConnected": "Conectado",
+    "StatusInstalled": "Bridge instalada — abra ou reinicie o FreeCAD",
+    "StatusMissing": "Bridge não instalada no FreeCAD",
+    "InstallingBridge": "Instalando Bridge do FreeCAD..."
+  }
+}

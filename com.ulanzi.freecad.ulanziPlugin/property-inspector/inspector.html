@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>FreeCAD Plugin Settings</title>
+  <link rel="stylesheet" href="../libs/css/uspi.css" />
+  <script src="../libs/js/constants.js"></script>
+  <script src="../libs/js/eventEmitter.js"></script>
+  <script src="../libs/js/timers.js"></script>
+  <script src="../libs/js/utils.js"></script>
+  <script src="../libs/js/ulanziApi.js"></script>
+  <style>
+    :root {
+      --bg: var(--uspi-bodybg, #1e1f22);
+      --card: #282d37;
+      --border: #3a4150;
+      --text: #e6e9ef;
+      --muted: #9aa4b2;
+      --accent: #38bdf8;
+      --ok: #34d399;
+      --warn: #facc15;
+      --err: #f87171;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+    }
+    body {
+      padding: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .title {
+      font-weight: 600;
+      font-size: 12px;
+      margin: 0 0 8px 0;
+      color: #fff;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .dot.connected { background: var(--ok); }
+    .dot.installed { background: var(--warn); }
+    .dot.missing { background: var(--err); }
+    button {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 8px 10px;
+      border: none;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #0b1120;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .hint {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    label {
+      display: block;
+      margin-top: 8px;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    select {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #171a21;
+      color: var(--text);
+      font-size: 12px;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="uspi-wrapper">
+    <div class="card">
+      <div class="title">FreeCAD Bridge</div>
+      <div class="status-row">
+        <span id="statusDot" class="dot"></span>
+        <span id="statusText" data-localize="StatusConnecting">Conectando ao plugin...</span>
+      </div>
+      <button id="installBtn" type="button" data-localize="InstallBridge">Instalar / Atualizar Bridge no FreeCAD</button>
+      <div id="installMsg" class="hint" data-localize="InstallHint">
+        Copia InitGui.py e ulanzi_bridge.py para a pasta Mod/UlanziBridge do FreeCAD. Após instalar, reinicie o FreeCAD.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title" data-localize="KeyBehavior">Comportamento da Tecla</div>
+      <label for="modeSelect" data-localize="Mode">Modo</label>
+      <select id="modeSelect">
+        <option value="auto" data-localize="ModeAuto">Automático (por posição + paginação)</option>
+        <option value="custom" data-localize="ModeCustom">Personalizado (escolher por bancada)</option>
+      </select>
+
+      <div id="autoInfo" class="hint" data-localize="AutoInfo">
+        Esta tecla assume automaticamente o comando correspondente à sua posição no D200X em cada bancada (com paginação no Part Design e Sketcher).
+      </div>
+
+      <div id="customPanel" class="hidden">
+        <label for="cmdDefault" data-localize="WorkbenchDefault">Padrão / Outras bancadas</label>
+        <select id="cmdDefault" data-wb="default"></select>
+
+        <label for="cmdPartDesign">Part Design</label>
+        <select id="cmdPartDesign" data-wb="PartDesignWorkbench"></select>
+
+        <label for="cmdSketcher">Sketcher</label>
+        <select id="cmdSketcher" data-wb="SketcherWorkbench"></select>
+
+        <label for="cmdPart">Part</label>
+        <select id="cmdPart" data-wb="PartWorkbench"></select>
+      </div>
+    </div>
+  </div>
+
+  <script src="../plugin/commands.js"></script>
+  <script>
+    const ACTION_UUID = "com.ulanzi.ulanzistudio.freecad.slot";
+    const { COMMANDS } = window.FREECAD_CATALOG || { COMMANDS: {} };
+
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+    const installBtn = document.getElementById("installBtn");
+    const installMsg = document.getElementById("installMsg");
+    const modeSelect = document.getElementById("modeSelect");
+    const autoInfo = document.getElementById("autoInfo");
+    const customPanel = document.getElementById("customPanel");
+    const wbSelects = Array.from(document.querySelectorAll("select[data-wb]"));
+
+    let currentSettings = {
+      mode: "auto",
+      custom: {
+        default: "Std_ViewFitAll",
+        PartDesignWorkbench: "__SAME__",
+        SketcherWorkbench: "__SAME__",
+        PartWorkbench: "__SAME__",
+      },
+    };
+
+    function tr(key, fallback) {
+      const translated = typeof $UD?.t === "function" ? $UD.t(key) : key;
+      return translated && translated !== key ? translated : fallback;
+    }
+
+    function populateDropdowns() {
+      const grouped = {};
+      for (const [cmdId, info] of Object.entries(COMMANDS)) {
+        const g = info.group || "Outros";
+        if (!grouped[g]) grouped[g] = [];
+        grouped[g].push([cmdId, info.label]);
+      }
+
+      wbSelects.forEach((sel) => {
+        const wb = sel.dataset.wb;
+        const fragment = document.createDocumentFragment();
+
+        if (wb !== "default") {
+          const sameOpt = new Option("— Igual ao Padrão —", "__SAME__");
+          sameOpt.dataset.localize = "SameAsDefault";
+          fragment.appendChild(sameOpt);
+        }
+
+        const emptyOpt = new Option("— Vazio (desativado) —", "");
+        emptyOpt.dataset.localize = "EmptyDisabled";
+        fragment.appendChild(emptyOpt);
+
+        for (const [groupName, items] of Object.entries(grouped)) {
+          const optGroup = document.createElement("optgroup");
+          optGroup.label = groupName;
+          items.forEach(([cmdId, label]) => {
+            optGroup.appendChild(new Option(label, cmdId));
+          });
+          fragment.appendChild(optGroup);
+        }
+
+        sel.replaceChildren(fragment);
+      });
+    }
+
+    function applyUI() {
+      modeSelect.value = currentSettings.mode || "auto";
+      const isCustom = modeSelect.value === "custom";
+      autoInfo.classList.toggle("hidden", isCustom);
+      customPanel.classList.toggle("hidden", !isCustom);
+
+      wbSelects.forEach((sel) => {
+        const wb = sel.dataset.wb;
+        const fallback = wb === "default" ? "Std_ViewFitAll" : "__SAME__";
+        const desired = currentSettings.custom?.[wb] ?? fallback;
+        sel.value = desired;
+        if (sel.selectedIndex === -1) {
+          sel.value = fallback;
+        }
+      });
+    }
+
+    function saveSettings() {
+      currentSettings.mode = modeSelect.value;
+      currentSettings.custom = {};
+      wbSelects.forEach((sel) => {
+        currentSettings.custom[sel.dataset.wb] = sel.value;
+      });
+      applyUI();
+
+      $UD.sendParamFromPlugin(currentSettings);
+      $UD.sendToPlugin({ action: "updateSettings", settings: currentSettings });
+    }
+
+    function renderBridgeStatus(status) {
+      statusDot.className = "dot";
+      if (status?.connected) {
+        statusDot.classList.add("connected");
+        statusText.textContent = `${tr("StatusConnected", "Conectado")} (${status.workbench || "FreeCAD"})`;
+      } else if (status?.installed) {
+        statusDot.classList.add("installed");
+        statusText.textContent = tr("StatusInstalled", "Bridge instalada — abra ou reinicie o FreeCAD");
+      } else {
+        statusDot.classList.add("missing");
+        statusText.textContent = tr("StatusMissing", "Bridge não instalada no FreeCAD");
+      }
+      if (status?.message) {
+        installMsg.textContent = status.message;
+      }
+    }
+
+    modeSelect.addEventListener("change", saveSettings);
+    wbSelects.forEach((sel) => sel.addEventListener("change", saveSettings));
+
+    installBtn.addEventListener("click", () => {
+      installBtn.disabled = true;
+      installMsg.textContent = tr("InstallingBridge", "Instalando Bridge do FreeCAD...");
+      $UD.sendToPlugin({ action: "installBridge" });
+      setTimeout(() => { installBtn.disabled = false; }, 1200);
+    });
+
+    function applyIncomingParams(param) {
+      if (param && (param.mode || param.custom)) {
+        currentSettings = {
+          mode: param.mode || "auto",
+          custom: { ...currentSettings.custom, ...(param.custom || {}) },
+        };
+        applyUI();
+      }
+    }
+
+    let lastStatusRequestAt = 0;
+    function requestBridgeStatus() {
+      const now = Date.now();
+      if (now - lastStatusRequestAt < 250) return;
+      lastStatusRequestAt = now;
+      $UD.sendToPlugin({ action: "getBridgeStatus" });
+    }
+
+    populateDropdowns();
+    applyUI();
+
+    $UD.connect(ACTION_UUID);
+
+    $UD.onConnected(() => {
+      if ($UD.key || $UD.actionid) {
+        requestBridgeStatus();
+      }
+    });
+
+    $UD.onAdd((message) => {
+      applyIncomingParams(message?.param);
+      requestBridgeStatus();
+    });
+
+    $UD.onParamFromApp((message) => {
+      applyIncomingParams(message?.param);
+      requestBridgeStatus();
+    });
+
+    $UD.onSendToPropertyInspector((message) => {
+      const data = message?.payload || message?.param || message;
+      if (data?.bridgeStatus) {
+        renderBridgeStatus(data.bridgeStatus);
+      }
+    });
+  </script>
+</body>
+</html>
